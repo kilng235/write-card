@@ -1,0 +1,37 @@
+{
+  "name": "write-card",
+  "version": "1.0.0",
+  "description": "链湴鍐欏崱缃戠珯 - 鍩轰簬鏄庢湀绉嬮潚鍐欏崱棰勮",
+  "main": "launcher.js",
+  "scripts": {
+    "start": "node server.js",
+    "launch": "node launcher.js",
+    "clean": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"if (Test-Path dist) { Remove-Item dist -Recurse -Force }\"",
+    "sync:capacitor-assets": "node scripts/sync-capacitor-assets.js",
+    "android:sync": "npm run sync:capacitor-assets && npx cap sync android",
+    "android:open": "npx cap open android",
+    "build:apk": "npm run android:sync && powershell -NoProfile -ExecutionPolicy Bypass -Command \"Set-Location android; if (Test-Path .\\gradlew.bat) { .\\gradlew.bat assembleDebug } else { throw 'Missing android\\\\gradlew.bat' }\"",
+    "prepare:release": "node scripts/prepare-release.js",
+    "build:exe": "npx pkg launcher.js --targets node18-win-x64 --output dist/write-card/write-card.exe",
+    "build:release": "npm run prepare:release && npm run build:exe"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.4.0",
+    "@capacitor/cli": "^8.4.0",
+    "@capacitor/clipboard": "^8.0.1",
+    "@capacitor/core": "^8.4.0",
+    "@capacitor/preferences": "^8.0.1",
+    "@capacitor/share": "^8.0.1",
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "pkg": "^5.8.1"
+  },
+  "pkg": {
+    "assets": [
+      "public/**/*",
+      "lib/**/*",
+      "preset.json"
+    ]
+  }
+}

@@ -1,0 +1,25 @@
+# Server config and logs
+.server-config.json
+.codex-server.out.log
+.codex-server.err.log
+server.stdout.log
+server.stderr.log
+*.local.log
+
+# Build outputs
+dist/
+write-card.tar.gz
+*.apk
+
+# Dependencies (reinstall with npm install)
+node_modules/
+
+# Caches and temp files
+.pkg-cache/
+.tmp-appdata/
+.tmp-qingzi-index.js
+
+# Android build outputs (see android/.gitignore for more)
+android/.gradle/
+android/app/build/
+android/build/

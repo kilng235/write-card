@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>写卡助手</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap"
+    rel="stylesheet"
+  >
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header id="header">
+      <div class="brand-wrap">
+        <div class="brand-mark">JC</div>
+        <div class="header-left">
+          <p class="eyebrow">Juno Card Studio</p>
+          <h1>写卡助手</h1>
+          <span class="subtitle">把预设、对话和设定整理成更顺手的创作工作台。</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <button id="btn-toggle-modules" class="icon-btn mobile-only" title="打开模块">模块</button>
+        <button id="btn-toggle-panel" class="icon-btn mobile-only" title="打开工作台">工作台</button>
+        <button id="btn-undo" class="icon-btn" title="撤回上一轮">撤回</button>
+        <button id="btn-settings" class="icon-btn" title="设置">设置</button>
+        <button id="btn-new-chat" class="icon-btn primary-ghost" title="新建对话">新建</button>
+      </div>
+    </header>
+
+    <div id="app">
+      <aside id="sidebar">
+        <div class="sidebar-header">
+          <div>
+            <p class="panel-kicker">预设模块</p>
+            <h3>创作模块</h3>
+          </div>
+          <span class="panel-badge">预设</span>
+        </div>
+        <div id="module-list" class="module-list"></div>
+      </aside>
+
+      <main id="chat-area">
+        <section class="chat-hero">
+          <div>
+            <p class="panel-kicker">创作流程</p>
+            <h2>在一个工作台里完成对话、提取、预览和润色。</h2>
+            <p>
+              先选一个模块继续创作，或者直接粘贴小说内容，提取世界观和主要角色设计。
+            </p>
+          </div>
+          <div class="hero-pills">
+            <span>预设驱动</span>
+            <span>小说提取</span>
+            <span>代码块预览</span>
+            <span>会话记录</span>
+          </div>
+        </section>
+
+        <div id="messages" class="messages">
+          <div class="welcome-msg">
+            <h2>欢迎使用写卡助手</h2>
+            <p>先保存 API 设置，再选择模块开始创作。</p>
+            <p>你可以直接聊天，也可以导入小说内容来提取设定。</p>
+          </div>
+        </div>
+
+        <div id="input-area" class="input-area">
+          <div class="input-toolbar">
+            <button id="btn-upload-img" class="tool-btn" title="上传图片">识图</button>
+            <button id="btn-open-novel" class="tool-btn accent-soft-btn" title="打开小说提取">小说提取</button>
+            <div id="upload-preview" class="upload-preview" style="display:none">
+              <img id="upload-thumb" src="" alt="上传预览">
+              <div class="upload-meta">
+                <span>已选择图片</span>
+                <small>发送前会先做视觉分析。</small>
+              </div>
+              <button id="btn-remove-img" class="upload-remove" title="移除图片">&times;</button>
+            </div>
+            <input type="file" id="file-input" accept="image/*" style="display:none">
+          </div>
+          <div class="input-bottom-row">
+            <textarea id="user-input" placeholder="输入你的下一条消息..." rows="3"></textarea>
+            <button id="btn-send" class="btn-send">发送</button>
+          </div>
+        </div>
+      </main>
+
+      <aside id="right-panel">
+        <section id="session-section" class="panel-card">
+          <div class="session-header">
+            <div>
+              <p class="panel-kicker">历史记录</p>
+              <h3>会话记录</h3>
+            </div>
+            <button id="btn-new-session" class="icon-btn" title="新建会话">新建</button>
+          </div>
+          <div id="session-list" class="session-list"></div>
+        </section>
+
+        <section id="preview-section" class="panel-card">
+          <div class="preview-header">
+            <div>
+              <p class="panel-kicker">输出结果</p>
+              <h3>代码块预览</h3>
+            </div>
+            <button id="btn-copy-all" class="icon-btn" title="复制全部">复制</button>
+          </div>
+          <div id="preview-content" class="preview-content">
+            <p class="placeholder">AI 输出里的代码块会显示在这里。</p>
+          </div>
+          <button id="btn-export" class="btn-export" style="display:none">导出代码块</button>
+        </section>
+      </aside>
+    </div>
+  </div>
+
+  <div id="insert-modal" class="modal" style="display:none">
+    <div class="modal-content modal-compact">
+      <div class="modal-header">
+        <h3>插入消息</h3>
+        <button class="modal-close" onclick="closeInsert()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>消息角色</label>
+          <div class="insert-role-row">
+            <button id="insert-role-user" class="btn-secondary insert-role-btn active" data-role="user">用户</button>
+            <button id="insert-role-assistant" class="btn-secondary insert-role-btn" data-role="assistant">助手</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>消息内容</label>
+          <textarea id="insert-content" rows="6" placeholder="输入要插入的消息内容..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-primary" onclick="confirmInsert()">插入</button>
+        <button class="btn-secondary" onclick="closeInsert()">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="novel-modal" class="modal" style="display:none">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>小说提取</h3>
+        <button class="modal-close" onclick="closeNovelModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>小说标题</label>
+          <input type="text" id="novel-title" placeholder="可选标题">
+        </div>
+        <div class="form-group">
+          <label>提取重点</label>
+          <div class="novel-options">
+            <label class="check-chip">
+              <input type="checkbox" id="novel-focus-world" checked>
+              <span>世界观</span>
+            </label>
+            <label class="check-chip">
+              <input type="checkbox" id="novel-focus-characters" checked>
+              <span>角色</span>
+            </label>
+            <label class="check-chip">
+              <input type="checkbox" id="novel-focus-optimize" checked>
+              <span>优化表达</span>
+            </label>
+          </div>
+          <small>会尽量忠于原文，同时整理成更适合写卡的结构。</small>
+        </div>
+        <div class="form-group">
+          <label>小说正文</label>
+          <div class="novel-file-row">
+            <button id="btn-upload-novel-file" class="btn-secondary" type="button">导入文件</button>
+            <input type="file" id="novel-file-input" accept=".txt,.md,.markdown,.text,.json" style="display:none">
+            <span id="novel-file-name" class="novel-file-name">支持 .txt、.md、.markdown 和 .json</span>
+          </div>
+          <textarea
+            id="novel-content"
+            class="novel-textarea"
+            rows="14"
+            placeholder="把小说正文、章节内容或长设定粘贴到这里。"
+          ></textarea>
+        </div>
+        <div class="form-group">
+          <label>补充要求</label>
+          <textarea
+            id="novel-note"
+            rows="4"
+            placeholder="可选补充要求，比如强调阵营、关系线或更适合角色卡使用。"
+          ></textarea>
+        </div>
+        <div id="novel-status" class="novel-status" style="display:none"></div>
+      </div>
+      <div class="modal-footer">
+        <button id="btn-run-novel" class="btn-primary">开始提取</button>
+        <button class="btn-secondary" onclick="closeNovelModal()">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="settings-modal" class="modal" style="display:none">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>API 设置</h3>
+        <button class="modal-close" onclick="closeSettings()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-group form-span-2">
+            <label>接口地址（Base URL）</label>
+            <input type="text" id="cfg-base-url" placeholder="https://api.openai.com/v1">
+            <small>填写兼容 OpenAI 的接口地址。</small>
+          </div>
+          <div class="form-group form-span-2">
+            <label>API 密钥</label>
+            <input type="password" id="cfg-api-key" placeholder="sk-...">
+            <small id="api-key-note">密钥仅保存在当前设备。</small>
+          </div>
+          <div class="form-group form-span-2">
+            <label>模型名称</label>
+            <div class="model-row">
+              <input type="text" id="cfg-model" placeholder="gpt-4o" list="model-list">
+              <datalist id="model-list"></datalist>
+              <button id="btn-load-models" class="btn-secondary btn-sm" type="button">加载模型</button>
+            </div>
+            <small id="model-status"></small>
+          </div>
+          <div class="form-group">
+            <label>温度（Temperature）</label>
+            <input type="number" id="cfg-temperature" value="0.8" min="0" max="2" step="0.1">
+          </div>
+          <div class="form-group">
+            <label>最大 Tokens</label>
+            <input type="number" id="cfg-max-tokens" value="4096" min="256" max="128000" step="256">
+          </div>
+        </div>
+
+        <hr class="form-divider">
+        <h4 class="form-section-title">识图模型（桌面版可选）</h4>
+
+        <div class="form-grid">
+          <div class="form-group form-span-2">
+            <label>识图接口地址（Base URL）</label>
+            <input type="text" id="cfg-aux-base-url" placeholder="可选，留空则沿用主接口地址">
+          </div>
+          <div class="form-group form-span-2">
+            <label>识图 API 密钥</label>
+            <input type="password" id="cfg-aux-api-key" placeholder="可选，留空则沿用主密钥">
+          </div>
+          <div class="form-group form-span-2">
+            <label>识图模型名称</label>
+            <div class="model-row">
+              <input type="text" id="cfg-aux-model" placeholder="gpt-4o" list="aux-model-list">
+              <datalist id="aux-model-list"></datalist>
+              <button id="btn-load-aux-models" class="btn-secondary btn-sm" type="button">加载识图模型</button>
+            </div>
+            <small id="aux-model-status"></small>
+          </div>
+        </div>
+
+        <hr class="form-divider">
+        <h4 class="form-section-title">变量替换</h4>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label>{{user}} 替换名</label>
+            <input type="text" id="cfg-user-name" placeholder="可选">
+          </div>
+          <div class="form-group">
+            <label>{{char}} 替换名</label>
+            <input type="text" id="cfg-char-name" placeholder="可选">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-primary" onclick="saveSettings()">保存</button>
+        <button class="btn-secondary" onclick="closeSettings()">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="mobile-panel-scrim" class="mobile-panel-scrim"></div>
+
+  <div id="update-modal" class="modal" style="display:none">
+    <div class="modal-content modal-compact">
+      <div class="modal-header">
+        <h3>发现新版本</h3>
+        <button class="modal-close" onclick="closeUpdateModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>最新版本</label>
+          <p id="update-version" style="font-size:18px;font-weight:600;margin:4px 0"></p>
+        </div>
+        <div class="form-group">
+          <label>下载文件</label>
+          <p id="update-size" style="font-size:13px;color:var(--text-muted);margin:4px 0"></p>
+        </div>
+        <div id="update-notes" class="form-group" style="display:none">
+          <label>更新说明</label>
+          <p id="update-notes-text" style="font-size:13px;white-space:pre-wrap;max-height:120px;overflow-y:auto;margin:4px 0"></p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="btn-do-update" class="btn-primary">立即更新</button>
+        <button class="btn-secondary" onclick="closeUpdateModal()">稍后再说</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="vendor/capacitor/capacitor.js"></script>
+  <script src="vendor/capacitor/preferences.js"></script>
+  <script src="vendor/capacitor/share.js"></script>
+  <script src="vendor/capacitor/clipboard.js"></script>
+  <script src="js/platform.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/templates.js"></script>
+  <script src="js/sessions.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/update-checker.js"></script>
+  <script src="js/mobile.js"></script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">WriteCard</string>
+    <string name="title_activity_main">WriteCard</string>
+    <string name="package_name">com.juno.writecard</string>
+    <string name="custom_url_scheme">com.juno.writecard</string>
+</resources>
